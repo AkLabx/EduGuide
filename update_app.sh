@@ -1,3 +1,4 @@
+cat << 'INNER_EOF' > src/App.tsx
 import { useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
@@ -42,7 +43,7 @@ export default function App() {
           <Route path="/" element={<Splash />} />
           <Route path="/onboarding" element={<Onboarding />} />
           <Route path="/home" element={<Home />} />
-          
+
           {/* Main App Routes with Bottom Navigation */}
           <Route element={<MainLayout />}>
             <Route path="/dashboard" element={<Dashboard />} />
@@ -52,14 +53,14 @@ export default function App() {
             <Route path="/notifications" element={<Notifications />} />
             <Route path="/downloads" element={<Downloads />} />
           </Route>
-          
+
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
-        
+
         <InstallPrompt />
-        
+
         {/* Native Android Snackbar Style Toaster */}
-        <Toaster 
+        <Toaster
           position="bottom-center"
           toastOptions={{
             duration: 3000,
@@ -95,3 +96,4 @@ export default function App() {
     </NotificationProvider>
   );
 }
+INNER_EOF

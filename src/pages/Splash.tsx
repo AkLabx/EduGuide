@@ -23,29 +23,40 @@ export default function Splash() {
   }, [navigate, hasSeenOnboarding, selectedBoard, selectedClass]);
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-indigo-600 text-white dark:bg-slate-950">
+    <div className="flex min-h-[100dvh] flex-col items-center justify-center bg-indigo-600 text-white dark:bg-slate-950 overflow-hidden relative">
+      {/* Background radial gradient for depth */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.1)_0%,transparent_100%)] dark:bg-[radial-gradient(circle_at_center,rgba(139,69,255,0.15)_0%,transparent_100%)]" />
+
       <motion.div
-        initial={{ scale: 0.5, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ duration: 0.5, type: 'spring' }}
-        className="flex flex-col items-center"
+        initial={{ scale: 0.8, opacity: 0, y: 20 }}
+        animate={{ scale: 1, opacity: 1, y: 0 }}
+        transition={{
+          duration: 0.8,
+          type: 'spring',
+          bounce: 0.4
+        }}
+        className="flex flex-col items-center z-10"
       >
-        <div className="mb-6 flex h-24 w-24 items-center justify-center rounded-3xl bg-white text-indigo-600 shadow-2xl dark:bg-slate-900">
-          <Logo className="h-14 w-14" />
-        </div>
+        <motion.div
+          className="mb-8 flex h-28 w-28 items-center justify-center rounded-[2rem] bg-white text-indigo-600 shadow-[0_20px_40px_-15px_rgba(0,0,0,0.3)] dark:bg-slate-900"
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          <Logo className="h-16 w-16 drop-shadow-sm" />
+        </motion.div>
         <motion.h1 
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.3 }}
-          className="text-4xl font-bold tracking-tight"
+          transition={{ delay: 0.4, duration: 0.5 }}
+          className="text-5xl font-extrabold tracking-tight drop-shadow-sm"
         >
           EduGuide
         </motion.h1>
         <motion.p 
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.5 }}
-          className="mt-3 text-indigo-200 dark:text-indigo-400"
+          transition={{ delay: 0.6, duration: 0.5 }}
+          className="mt-4 text-lg font-medium text-indigo-100 dark:text-indigo-300"
         >
           Your Ultimate Study Companion
         </motion.p>
@@ -54,16 +65,24 @@ export default function Splash() {
       <motion.div 
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 1 }}
-        className="absolute bottom-12"
+        transition={{ delay: 1.2, duration: 0.8 }}
+        className="absolute bottom-safe-offset-12 z-10 pb-12"
       >
-        <div className="flex space-x-2">
+        <div className="flex space-x-2.5">
           {[0, 1, 2].map((i) => (
             <motion.div
               key={i}
-              animate={{ y: [0, -10, 0] }}
-              transition={{ duration: 1, repeat: Infinity, delay: i * 0.2 }}
-              className="h-2 w-2 rounded-full bg-white/50"
+              animate={{
+                scale: [1, 1.5, 1],
+                opacity: [0.3, 1, 0.3]
+              }}
+              transition={{
+                duration: 1.2,
+                repeat: Infinity,
+                delay: i * 0.2,
+                ease: "easeInOut"
+              }}
+              className="h-2.5 w-2.5 rounded-full bg-white shadow-[0_0_8px_rgba(255,255,255,0.5)] dark:bg-indigo-400 dark:shadow-[0_0_8px_rgba(139,69,255,0.5)]"
             />
           ))}
         </div>
