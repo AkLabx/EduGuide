@@ -1,40 +1,28 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
 @import "tailwindcss";
 
 @theme {
-  --color-primary-50: #eef2ff;
-  --color-primary-100: #e0e7ff;
-  --color-primary-500: #6366f1;
-  --color-primary-600: #4f46e5;
-  --color-primary-700: #4338ca;
-  --color-primary-900: #312e81;
-
-  --color-accent-500: #10b981; /* Emerald */
-  --color-accent-600: #059669;
-
-  --color-coral-500: #f43f5e;
-  --color-coral-600: #e11d48;
+  --font-sans: "Outfit", ui-sans-serif, system-ui, sans-serif;
+  
+  /* Brand Color: Electric Violet (overriding indigo for global application) */
+  --color-indigo-50: #f4f0ff;
+  --color-indigo-100: #ebe4ff;
+  --color-indigo-200: #d9ccff;
+  --color-indigo-300: #bfa3ff;
+  --color-indigo-400: #a273ff;
+  --color-indigo-500: #8b45ff;
+  --color-indigo-600: #7c22ff;
+  --color-indigo-700: #6b0ce6;
+  --color-indigo-800: #5a0bbd;
+  --color-indigo-900: #4a0a99;
+  --color-indigo-950: #2e0066;
 }
 
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  background-color: #f9fafb;
-}
+@custom-variant dark (&:is(.dark *));
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
-}
-
-/* Hide scrollbar for clean UI in swipeable elements */
-.hide-scrollbar::-webkit-scrollbar {
-  display: none;
-}
-.hide-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
+@layer base {
+  body {
+    @apply font-sans antialiased text-slate-900 bg-slate-50 dark:bg-slate-950 dark:text-slate-50 transition-colors duration-300;
+    -webkit-tap-highlight-color: transparent;
+  }
 }

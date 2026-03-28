@@ -1,28 +1,21 @@
-import { motion } from 'framer-motion';
+import { motion } from "motion/react";
+import { Spinner } from "./Spinner";
 
 export function PageLoader() {
   return (
-    <div className="fixed inset-0 flex flex-col items-center justify-center bg-white z-50">
-      <motion.div
-        animate={{ scale: [1, 1.2, 1], rotate: [0, 180, 360] }}
-        transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-        className="w-16 h-16 bg-primary-600 rounded-2xl mb-8"
-      />
-      <motion.h2
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="text-primary-900 font-bold text-xl tracking-tight"
-      >
-        EdTech Guide
-      </motion.h2>
-      <motion.p
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.2 }}
-        className="text-gray-500 mt-2 text-sm"
-      >
-        Preparing your learning space...
-      </motion.p>
-    </div>
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm dark:bg-slate-950/80"
+    >
+      <div className="relative flex items-center justify-center">
+        <div className="absolute h-24 w-24 animate-ping rounded-full bg-indigo-100 opacity-75 dark:bg-indigo-900/50"></div>
+        <div className="relative flex h-16 w-16 items-center justify-center rounded-full bg-white shadow-xl dark:bg-slate-900">
+          <Spinner size={32} />
+        </div>
+      </div>
+      <p className="mt-6 text-sm font-medium text-slate-500 animate-pulse dark:text-slate-400">Loading amazing content...</p>
+    </motion.div>
   );
 }

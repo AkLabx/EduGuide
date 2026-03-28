@@ -1,55 +1,72 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { useUserStore } from '../store/userStore';
+import { motion } from 'motion/react';
+import { Logo } from '@/components/ui/Logo';
+import { useAppStore } from '@/store/useAppStore';
 
-export function Splash() {
+export default function Splash() {
   const navigate = useNavigate();
-  const { profile } = useUserStore();
+  const { hasSeenOnboarding, selectedBoard, selectedClass } = useAppStore();
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (profile?.hasCompletedOnboarding) {
-        navigate('/dashboard');
-      } else {
+      if (!hasSeenOnboarding) {
         navigate('/onboarding');
+      } else if (!selectedBoard || !selectedClass) {
+        navigate('/home');
+      } else {
+        navigate('/dashboard');
       }
     }, 2500);
 
     return () => clearTimeout(timer);
-  }, [navigate, profile]);
+  }, [navigate, hasSeenOnboarding, selectedBoard, selectedClass]);
 
   return (
-    <div className="flex h-screen w-full items-center justify-center bg-gradient-to-br from-primary-600 to-indigo-800">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-indigo-600 text-white dark:bg-slate-950">
       <motion.div
-        initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.8, ease: "easeOut" }}
+        initial={{ scale: 0.5, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ duration: 0.5, type: 'spring' }}
         className="flex flex-col items-center"
       >
-        <div className="w-24 h-24 bg-white rounded-3xl shadow-2xl flex items-center justify-center mb-6 overflow-hidden">
-          <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
-            className="w-16 h-16 bg-gradient-to-tr from-accent-400 to-primary-500 rounded-2xl"
-          />
+        <div className="mb-6 flex h-24 w-24 items-center justify-center rounded-3xl bg-white text-indigo-600 shadow-2xl dark:bg-slate-900">
+          <Logo className="h-14 w-14" />
         </div>
-        <motion.h1
+        <motion.h1 
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.3, duration: 0.5 }}
-          className="text-4xl font-extrabold text-white tracking-tight"
+          transition={{ delay: 0.3 }}
+          className="text-4xl font-bold tracking-tight"
         >
-          EdTech Guide
+          EduGuide
         </motion.h1>
-        <motion.p
+        <motion.p 
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.5, duration: 0.5 }}
-          className="text-primary-100 mt-3 font-medium text-lg"
+          transition={{ delay: 0.5 }}
+          className="mt-3 text-indigo-200 dark:text-indigo-400"
         >
-          Learn. Grow. Succeed.
+          Your Ultimate Study Companion
         </motion.p>
+      </motion.div>
+      
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 1 }}
+        className="absolute bottom-12"
+      >
+        <div className="flex space-x-2">
+          {[0, 1, 2].map((i) => (
+            <motion.div
+              key={i}
+              animate={{ y: [0, -10, 0] }}
+              transition={{ duration: 1, repeat: Infinity, delay: i * 0.2 }}
+              className="h-2 w-2 rounded-full bg-white/50"
+            />
+          ))}
+        </div>
       </motion.div>
     </div>
   );
