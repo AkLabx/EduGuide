@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
 
 # Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
@@ -37,7 +38,10 @@ jobs:
         run: npm run build
         env:
           NODE_ENV: production
-          VITE_BASE_URL: /
+          VITE_BASE_URL: /EduGuide/
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
