@@ -12,6 +12,7 @@ import {
   ChevronRight,
   Download
 } from 'lucide-react';
+import { Logo } from "@/components/ui/Logo";
 import { useAppStore } from '@/store/useAppStore';
 import { PageLoader } from '@/components/ui/PageLoader';
 import { useNotifications } from '@/contexts/NotificationContext';
@@ -65,9 +66,14 @@ export default function Dashboard() {
       {/* Header */}
       <header className="sticky top-0 z-10 bg-indigo-600 px-4 pb-6 pt-12 text-white shadow-md rounded-b-3xl dark:bg-indigo-900">
         <div className="flex items-center justify-between">
-          <div>
-            <p className="text-indigo-200 text-sm font-medium dark:text-indigo-300">Welcome back, Student</p>
-            <h1 className="text-2xl font-bold">Class {selectedClass} • {selectedBoard}</h1>
+          <div className="flex items-center space-x-3">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white text-indigo-600 shadow-sm">
+              <Logo className="h-8 w-8" />
+            </div>
+            <div>
+              <p className="text-indigo-200 text-sm font-medium dark:text-indigo-300">Welcome back, Student</p>
+              <h1 className="text-xl font-bold">Class {selectedClass} • {selectedBoard}</h1>
+            </div>
           </div>
           <div className="flex space-x-3">
             <button 
@@ -100,13 +106,13 @@ export default function Dashboard() {
                 <motion.button
                   whileTap={{ scale: 0.95 }}
                   key={feature.id}
-                  className="flex flex-col items-center justify-center space-y-2 rounded-2xl bg-white p-3 shadow-sm dark:bg-slate-900"
+                  className="flex flex-col items-center justify-center space-y-2 rounded-2xl bg-white p-3 shadow-[0_2px_8px_rgba(0,0,0,0.06)] active:shadow-sm dark:bg-slate-900"
                   onClick={() => navigate(feature.path)}
                 >
                   <div className={`rounded-full p-3 ${feature.bg} ${feature.color}`}>
                     <Icon size={24} />
                   </div>
-                  <span className="text-center text-xs font-medium text-slate-600 leading-tight dark:text-slate-400">
+                  <span className="text-center text-[11px] font-medium text-slate-600 leading-tight dark:text-slate-400">
                     {feature.name}
                   </span>
                 </motion.button>
@@ -129,7 +135,7 @@ export default function Dashboard() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
                 key={subject.id}
-                className="flex cursor-pointer items-center overflow-hidden rounded-2xl bg-white shadow-sm transition-shadow hover:shadow-md dark:bg-slate-900"
+                className="flex cursor-pointer items-center overflow-hidden rounded-2xl bg-white shadow-[0_2px_8px_rgba(0,0,0,0.06)] transition-all active:scale-[0.98] dark:bg-slate-900"
                 onClick={() => navigate('/subjects')}
               >
                 <div className={`w-3 self-stretch ${subject.color}`} />

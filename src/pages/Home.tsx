@@ -27,14 +27,7 @@ export default function Home() {
 
   const handleClassSelect = (cls: string) => {
     setSelectedClass(cls);
-    toast.success(`Class ${cls} ${selectedBoard} selected!`, {
-      icon: 'ð',
-      style: {
-        borderRadius: '16px',
-        background: '#333',
-        color: '#fff',
-      },
-    });
+    toast.success(`Class ${cls} ${selectedBoard} selected!`);
     navigate('/dashboard');
   };
 
