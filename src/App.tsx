@@ -40,7 +40,7 @@ function AnimatedRoutes() {
 function App() {
   return (
     <>
-      <Router>
+      <Router basename="/EduGuide">
         <AnimatedRoutes />
       </Router>
       <Toaster
