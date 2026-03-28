@@ -1,17 +1,11 @@
 import { useEffect, useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { HashRouter as Router } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
-import { AnimatePresence } from 'framer-motion';
 
-import { AppLayout } from './components/layout/AppLayout';
 import { PageLoader } from './components/ui/PageLoader';
-import { Splash } from './pages/Splash';
-import { Onboarding } from './pages/Onboarding';
-import { Dashboard } from './pages/Dashboard';
-import { Syllabus } from './pages/Syllabus';
+import { AppRoutes } from './routes/AppRoutes';
 
-function AnimatedRoutes() {
-  const location = useLocation();
+function AppContent() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -21,27 +15,14 @@ function AnimatedRoutes() {
 
   if (loading) return <PageLoader />;
 
-  return (
-    <AnimatePresence mode="wait">
-      <Routes location={location} key={location.pathname}>
-        <Route path="/" element={<Splash />} />
-        <Route path="/onboarding" element={<Onboarding />} />
-        <Route path="/dashboard" element={<AppLayout><Dashboard /></AppLayout>} />
-        <Route path="/syllabus/:subjectId" element={<AppLayout><Syllabus /></AppLayout>} />
-        {/* Fallback routes */}
-        <Route path="/syllabus" element={<Navigate to="/dashboard" replace />} />
-        <Route path="/profile" element={<AppLayout><div className="p-8 text-center text-gray-500 font-medium">Profile coming soon...</div></AppLayout>} />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </AnimatePresence>
-  );
+  return <AppRoutes />;
 }
 
 function App() {
   return (
     <>
-      <Router basename="/EduGuide">
-        <AnimatedRoutes />
+      <Router>
+        <AppContent />
       </Router>
       <Toaster
         position="top-center"
