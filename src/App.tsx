@@ -11,6 +11,7 @@ import Dashboard from './pages/Dashboard';
 import Subjects from './pages/Subjects';
 import Tests from './pages/Tests';
 import Profile from './pages/Profile';
+import Homework from './pages/Homework';
 
 // Components & Contexts
 import { MainLayout } from './components/MainLayout';
@@ -47,6 +48,7 @@ export default function App() {
           <Route element={<MainLayout />}>
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/subjects" element={<Subjects />} />
+            <Route path="/homework" element={<Homework />} />
             <Route path="/tests" element={<Tests />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/notifications" element={<Notifications />} />
