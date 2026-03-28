@@ -7,7 +7,7 @@ import { VitePWA } from 'vite-plugin-pwa';
 export default defineConfig(({mode}) => {
   const env = loadEnv(mode, '.', '');
   return {
-    base: process.env.VITE_BASE_URL || '/',
+    base: '/EduGuide/',
     plugins: [
       react(), 
       tailwindcss(),
