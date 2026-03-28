@@ -72,7 +72,12 @@ export function Onboarding() {
               className="flex flex-col items-center text-center space-y-8"
             >
               <div className={`w-32 h-32 rounded-full ${steps[step].bg} flex items-center justify-center mb-6`}>
-                {steps[step].icon({ size: 64, className: steps[step].color })}
+                {
+                  (() => {
+                    const Icon = steps[step].icon;
+                    return <Icon size={64} className={steps[step].color} />;
+                  })()
+                }
               </div>
               <div className="space-y-4">
                 <h2 className="text-3xl font-extrabold text-gray-900 tracking-tight">{steps[step].title}</h2>
