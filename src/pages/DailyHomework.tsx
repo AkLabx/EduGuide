@@ -34,6 +34,7 @@ export default function DailyHomework() {
   const [homework, setHomework] = useState<HomeworkItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [homeworkDates, setHomeworkDates] = useState<Set<string>>(new Set());
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchHomework();
@@ -72,7 +73,8 @@ export default function DailyHomework() {
   const onDateClick = (day: Date) => setSelectedDate(day);
 
 
-  const handleDownload = async (url: string, title: string) => {
+  const handleDownload = async (url: string, title: string, id: string) => {
+    setDownloadingId(id);
     try {
       const response = await fetch(url);
       const blob = await response.blob();
@@ -90,6 +92,8 @@ export default function DailyHomework() {
     } catch (error) {
       console.error('Download failed:', error);
       toast.error('Failed to download file. Please try viewing it instead.');
+    } finally {
+      setDownloadingId(null);
     }
   };
 
@@ -250,10 +254,15 @@ export default function DailyHomework() {
                       <Eye size={16} /> View
                     </a>
                     <button
-                      onClick={() => handleDownload(item.file_url, item.title)}
-                      className="flex-1 flex items-center justify-center gap-2 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-900/20 dark:hover:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 py-2 rounded-lg text-sm font-medium transition-colors border border-indigo-100 dark:border-indigo-800"
+                      onClick={() => handleDownload(item.file_url, item.title, item.id)}
+                      disabled={downloadingId === item.id}
+                      className="flex-1 flex items-center justify-center gap-2 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-900/20 dark:hover:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 py-2 rounded-lg text-sm font-medium transition-colors border border-indigo-100 dark:border-indigo-800 disabled:opacity-70"
                     >
-                      <Download size={16} /> Download
+                      {downloadingId === item.id ? (
+                        <Loader2 size={16} className="animate-spin" />
+                      ) : (
+                        <><Download size={16} /> Download</>
+                      )}
                     </button>
                   </div>
                 </div>
