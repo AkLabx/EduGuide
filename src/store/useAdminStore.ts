@@ -7,7 +7,7 @@ interface AdminState {
   logout: () => void;
 }
 
-const ADMIN_PASSWORD = import.meta.env?.VITE_ADMIN_PASSWORD || 'admin123';
+const ADMIN_PASSWORD = import.meta.env?.VITE_ADMIN_PASSWORD || '81026';
 
 export const useAdminStore = create<AdminState>()(
   persist(
