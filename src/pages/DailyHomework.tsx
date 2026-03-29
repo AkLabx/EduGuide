@@ -17,6 +17,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import toast from 'react-hot-toast';
+import { useAppStore } from '../store/useAppStore';
 
 interface HomeworkItem {
   id: string;
@@ -25,9 +26,12 @@ interface HomeworkItem {
   subject: string;
   file_url: string;
   created_at: string;
+  target_class?: string | null;
+  target_board?: string | null;
 }
 
 export default function DailyHomework() {
+  const { selectedClass, selectedBoard } = useAppStore();
   const navigate = useNavigate();
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -38,7 +42,7 @@ export default function DailyHomework() {
 
   useEffect(() => {
     fetchHomework();
-  }, [currentMonth]);
+  }, [currentMonth, selectedClass, selectedBoard]);
 
   const fetchHomework = async () => {
     setLoading(true);
@@ -46,12 +50,29 @@ export default function DailyHomework() {
       const start = startOfMonth(currentMonth);
       const end = endOfMonth(currentMonth);
 
-      const { data, error } = await supabase
+
+      let query = supabase
         .from('homework')
         .select('*')
         .gte('date', format(start, 'yyyy-MM-dd'))
-        .lte('date', format(end, 'yyyy-MM-dd'))
-        .order('date', { ascending: false });
+        .lte('date', format(end, 'yyyy-MM-dd'));
+
+      // In Supabase, we can use an OR clause for the class and board logic
+      // target_class is null OR target_class = selectedClass
+      if (selectedClass) {
+        query = query.or(`target_class.is.null,target_class.eq.${selectedClass}`);
+      } else {
+        query = query.is('target_class', null);
+      }
+
+      if (selectedBoard) {
+        query = query.or(`target_board.is.null,target_board.eq.${selectedBoard}`);
+      } else {
+        query = query.is('target_board', null);
+      }
+
+      const { data, error } = await query.order('date', { ascending: false });
+
 
       if (error) throw error;
 
@@ -243,6 +264,20 @@ export default function DailyHomework() {
                 <div className="flex-1 overflow-hidden">
                   <p className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 mb-1 uppercase tracking-wider">{item.subject}</p>
                   <h4 className="text-base font-bold text-slate-800 dark:text-white truncate">{item.title}</h4>
+
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {item.target_class && (
+                      <span className="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-xs font-medium text-slate-600 dark:text-slate-400">
+                        Class {item.target_class}
+                      </span>
+                    )}
+                    {item.target_board && (
+                      <span className="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-xs font-medium text-slate-600 dark:text-slate-400">
+                        {item.target_board}
+                      </span>
+                    )}
+                  </div>
+
 
                   <div className="flex gap-2 mt-3">
                     <a
