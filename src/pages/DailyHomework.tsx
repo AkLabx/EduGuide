@@ -71,6 +71,28 @@ export default function DailyHomework() {
   const prevMonth = () => setCurrentMonth(subMonths(currentMonth, 1));
   const onDateClick = (day: Date) => setSelectedDate(day);
 
+
+  const handleDownload = async (url: string, title: string) => {
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = `${title}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      // Clean up the object URL to release memory
+      window.URL.revokeObjectURL(blobUrl);
+    } catch (error) {
+      console.error('Download failed:', error);
+      toast.error('Failed to download file. Please try viewing it instead.');
+    }
+  };
+
   const renderHeader = () => {
     return (
       <div className="flex items-center justify-between mb-4 px-2">
@@ -227,13 +249,12 @@ export default function DailyHomework() {
                     >
                       <Eye size={16} /> View
                     </a>
-                    <a
-                      href={item.file_url}
-                      download
+                    <button
+                      onClick={() => handleDownload(item.file_url, item.title)}
                       className="flex-1 flex items-center justify-center gap-2 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-900/20 dark:hover:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 py-2 rounded-lg text-sm font-medium transition-colors border border-indigo-100 dark:border-indigo-800"
                     >
                       <Download size={16} /> Download
-                    </a>
+                    </button>
                   </div>
                 </div>
               </motion.div>

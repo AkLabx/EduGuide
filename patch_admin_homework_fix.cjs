@@ -1,4 +1,11 @@
-import React, { useState, useEffect } from 'react';
+const fs = require('fs');
+const path = 'src/pages/AdminHomework.tsx';
+let content = fs.readFileSync(path, 'utf8');
+
+// The file was mangled in the last sed commands and string replace.
+// Instead of trying to patch it, let's just write the whole clean file back.
+
+const cleanContent = `import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { ArrowLeft, Upload, FileText, Loader2, CheckCircle2, Trash2 } from 'lucide-react';
@@ -117,8 +124,8 @@ export default function AdminHomework() {
 
     try {
       const fileExt = file.name.split('.').pop();
-      const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
-      const filePath = `homework/${formData.date}/${fileName}`;
+      const fileName = \`\${Date.now()}_\${Math.random().toString(36).substring(7)}.\${fileExt}\`;
+      const filePath = \`homework/\${formData.date}/\${fileName}\`;
 
       const { error: uploadError, data: uploadData } = await supabase.storage
         .from('homework_files')
@@ -308,3 +315,6 @@ export default function AdminHomework() {
     </div>
   );
 }
+`;
+
+fs.writeFileSync(path, cleanContent);
