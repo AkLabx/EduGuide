@@ -143,7 +143,7 @@ export default function Profile() {
           <h3 className="mb-4 pl-2 text-xs font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500">Administration</h3>
           <div className="overflow-hidden rounded-2xl bg-white shadow-[0_2px_8px_rgba(0,0,0,0.06)] dark:bg-slate-900">
             <button
-              onClick={() => navigate('/admin/homework')}
+              onClick={() => navigate('/admin/dashboard')}
               className="flex w-full items-center justify-between p-4 transition-colors hover:bg-slate-50 active:bg-slate-100 dark:hover:bg-slate-800/50 dark:active:bg-slate-800"
             >
               <div className="flex items-center space-x-3 text-slate-700 dark:text-slate-300">

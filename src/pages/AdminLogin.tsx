@@ -14,7 +14,7 @@ export default function AdminLogin() {
     e.preventDefault();
     if (login(password)) {
       toast.success('Logged in as Admin');
-      navigate('/admin/homework');
+      navigate('/admin/dashboard');
     } else {
       toast.error('Incorrect password');
       setPassword('');

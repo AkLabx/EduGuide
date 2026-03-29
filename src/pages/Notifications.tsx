@@ -1,31 +1,47 @@
 import { motion } from 'motion/react';
-import { Bell, CheckCircle2, BookOpen, AlertCircle, Trash2 } from 'lucide-react';
+import { Bell, CheckCircle2, BookOpen, AlertCircle, Trash2, Info } from 'lucide-react';
 import { useNotifications, AppNotification } from '../contexts/NotificationContext';
 import { Button } from '../components/ui/Button';
 
 export default function Notifications() {
   const { notifications, markAsRead, markAllAsRead, deleteNotification } = useNotifications();
 
-  const getIcon = (type: AppNotification['type']) => {
-    switch (type) {
-      case 'test':
-        return <CheckCircle2 className="text-rose-500" size={20} />;
-      case 'material':
-        return <BookOpen className="text-indigo-500" size={20} />;
-      case 'announcement':
-        return <AlertCircle className="text-amber-500" size={20} />;
+  const getIcon = (notification: AppNotification) => {
+    if (notification.type === 'test') {
+      return <CheckCircle2 className="text-rose-500" size={20} />;
     }
+    if (notification.type === 'material') {
+      return <BookOpen className="text-indigo-500" size={20} />;
+    }
+    if (notification.type === 'announcement') {
+      if (notification.priority === 'high') {
+        return <AlertCircle className="text-rose-500" size={20} />;
+      } else if (notification.priority === 'medium') {
+        return <AlertCircle className="text-amber-500" size={20} />;
+      } else {
+         return <Info className="text-blue-500" size={20} />;
+      }
+    }
+    return <Bell className="text-slate-500" size={20} />;
   };
 
-  const getBgColor = (type: AppNotification['type']) => {
-    switch (type) {
-      case 'test':
-        return 'bg-rose-100 dark:bg-rose-900/30';
-      case 'material':
-        return 'bg-indigo-100 dark:bg-indigo-900/30';
-      case 'announcement':
-        return 'bg-amber-100 dark:bg-amber-900/30';
+  const getBgColor = (notification: AppNotification) => {
+    if (notification.type === 'test') {
+      return 'bg-rose-100 dark:bg-rose-900/30';
     }
+    if (notification.type === 'material') {
+      return 'bg-indigo-100 dark:bg-indigo-900/30';
+    }
+    if (notification.type === 'announcement') {
+      if (notification.priority === 'high') {
+        return 'bg-rose-100 dark:bg-rose-900/30';
+      } else if (notification.priority === 'medium') {
+        return 'bg-amber-100 dark:bg-amber-900/30';
+      } else {
+        return 'bg-blue-100 dark:bg-blue-900/30';
+      }
+    }
+    return 'bg-slate-100 dark:bg-slate-800';
   };
 
   const formatDate = (dateString: string) => {
@@ -36,7 +52,7 @@ export default function Notifications() {
     const diffHours = Math.floor(diffMins / 60);
     const diffDays = Math.floor(diffHours / 24);
 
-    if (diffMins < 60) return `${diffMins}m ago`;
+    if (diffMins < 60) return `${Math.max(1, diffMins)}m ago`;
     if (diffHours < 24) return `${diffHours}h ago`;
     if (diffDays === 1) return 'Yesterday';
     return `${diffDays}d ago`;
@@ -74,19 +90,23 @@ export default function Notifications() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, x: -20 }}
-                className={`relative flex items-start space-x-4 rounded-2xl p-4 transition-colors ${
+                className={`relative flex items-start space-x-4 rounded-2xl p-4 transition-colors border border-transparent ${
                   notification.isRead
-                    ? 'bg-white dark:bg-slate-900'
-                    : 'bg-indigo-50/50 dark:bg-indigo-900/10'
+                    ? 'bg-white dark:bg-slate-900 dark:border-slate-800 border-slate-100'
+                    : notification.priority === 'high'
+                      ? 'bg-rose-50/50 dark:bg-rose-900/10 border-rose-100 dark:border-rose-900/30'
+                      : 'bg-indigo-50/50 dark:bg-indigo-900/10 border-indigo-100 dark:border-indigo-900/30'
                 }`}
                 onClick={() => !notification.isRead && markAsRead(notification.id)}
               >
                 {!notification.isRead && (
-                  <div className="absolute left-0 top-1/2 h-2 w-2 -translate-y-1/2 rounded-full bg-indigo-600 dark:bg-indigo-400" />
+                  <div className={`absolute left-0 top-1/2 h-2 w-2 -translate-y-1/2 rounded-full ${
+                    notification.priority === 'high' ? 'bg-rose-600 dark:bg-rose-400' : 'bg-indigo-600 dark:bg-indigo-400'
+                  }`} />
                 )}
                 
-                <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${getBgColor(notification.type)}`}>
-                  {getIcon(notification.type)}
+                <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${getBgColor(notification)}`}>
+                  {getIcon(notification)}
                 </div>
                 
                 <div className="flex-1">
