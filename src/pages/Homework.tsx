@@ -45,8 +45,10 @@ export default function Homework() {
   const navigate = useNavigate();
 
   const handleCategoryClick = (id: string) => {
-    // For now, show a coming soon toast
-    // In the future, this will navigate to specific routes like `/homework/daily`
+    if (id === 'daily') {
+      navigate('/homework/daily');
+      return;
+    }
     toast(`Coming soon: ${id.replace('-', ' ')} feature!`, {
       icon: '🚧',
     });

@@ -12,6 +12,8 @@ import Subjects from './pages/Subjects';
 import Tests from './pages/Tests';
 import Profile from './pages/Profile';
 import Homework from './pages/Homework';
+import DailyHomework from './pages/DailyHomework';
+import AdminHomework from './pages/AdminHomework';
 
 // Components & Contexts
 import { MainLayout } from './components/MainLayout';
@@ -49,6 +51,8 @@ export default function App() {
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/subjects" element={<Subjects />} />
             <Route path="/homework" element={<Homework />} />
+            <Route path="/homework/daily" element={<DailyHomework />} />
+            <Route path="/admin/homework" element={<AdminHomework />} />
             <Route path="/tests" element={<Tests />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/notifications" element={<Notifications />} />
