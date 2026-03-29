@@ -1,4 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { supabase } from '../lib/supabase';
+import { useAppStore } from '../store/useAppStore';
+import toast from 'react-hot-toast';
 
 export type NotificationType = 'test' | 'material' | 'announcement';
 
@@ -9,6 +12,8 @@ export interface AppNotification {
   type: NotificationType;
   createdAt: string;
   isRead: boolean;
+  priority?: string;
+  isSupabase?: boolean; // flag to identify db announcements
 }
 
 export interface NotificationPreferences {
@@ -31,32 +36,18 @@ const NotificationContext = createContext<NotificationContextType | undefined>(u
 
 const defaultNotifications: AppNotification[] = [
   {
-    id: '1',
-    title: 'Upcoming Mock Test',
-    message: 'Your Physics mock test is scheduled for tomorrow at 10:00 AM.',
-    type: 'test',
-    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(), // 2 hours ago
-    isRead: false,
-  },
-  {
-    id: '2',
-    title: 'New Study Material',
-    message: 'Chapter 4: Thermodynamics notes have been uploaded.',
-    type: 'material',
-    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(), // 1 day ago
-    isRead: false,
-  },
-  {
-    id: '3',
-    title: 'System Maintenance',
-    message: 'The app will be down for maintenance on Sunday from 2 AM to 4 AM.',
+    id: 'local-1',
+    title: 'Welcome to EduGuide!',
+    message: 'Explore your subjects and start learning.',
     type: 'announcement',
-    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 48).toISOString(), // 2 days ago
-    isRead: true,
-  },
+    createdAt: new Date().toISOString(),
+    isRead: false,
+  }
 ];
 
 export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { selectedBoard, selectedClass } = useAppStore();
+
   const [notifications, setNotifications] = useState<AppNotification[]>(() => {
     const saved = localStorage.getItem('eduguide_notifications');
     return saved ? JSON.parse(saved) : defaultNotifications;
@@ -71,6 +62,103 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
     };
   });
 
+  // Load announcements from Supabase
+  useEffect(() => {
+    if (!selectedBoard || !selectedClass) return;
+
+    const fetchAnnouncements = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('announcements')
+          .select('*')
+          .eq('is_active', true)
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        if (data) {
+          // Filter based on user's class and board
+          const relevantAnnouncements = data.filter(a => {
+            const classMatch = !a.target_class || a.target_class === selectedClass;
+            const boardMatch = !a.target_board || a.target_board === selectedBoard;
+            return classMatch && boardMatch;
+          });
+
+          setNotifications(prev => {
+            // Keep local non-announcement notifications and already read db notifications (by id)
+            const readDbIds = new Set(prev.filter(n => n.isSupabase && n.isRead).map(n => n.id));
+            const newDbNotifications: AppNotification[] = relevantAnnouncements.map(a => ({
+              id: a.id,
+              title: a.title,
+              message: a.message,
+              type: 'announcement',
+              createdAt: a.created_at,
+              isRead: readDbIds.has(a.id),
+              priority: a.priority,
+              isSupabase: true
+            }));
+
+            // Keep only local notifications that are not DB announcements
+            const localOnly = prev.filter(n => !n.isSupabase);
+
+            // Merge and sort
+            const merged = [...localOnly, ...newDbNotifications].sort((a, b) =>
+              new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+            );
+
+            return merged;
+          });
+        }
+      } catch (err) {
+        console.error('Error fetching announcements:', err);
+      }
+    };
+
+    fetchAnnouncements();
+
+    // Subscribe to real-time changes
+    const channel = supabase.channel('public:announcements')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'announcements' }, (payload) => {
+        const a = payload.new;
+        if (a.is_active) {
+          const classMatch = !a.target_class || a.target_class === selectedClass;
+          const boardMatch = !a.target_board || a.target_board === selectedBoard;
+
+          if (classMatch && boardMatch) {
+            const newNotification: AppNotification = {
+              id: a.id,
+              title: a.title,
+              message: a.message,
+              type: 'announcement',
+              createdAt: a.created_at,
+              isRead: false,
+              priority: a.priority,
+              isSupabase: true
+            };
+
+            setNotifications(prev => {
+              if (prev.some(n => n.id === a.id)) return prev;
+              return [newNotification, ...prev].sort((x, y) =>
+                new Date(y.createdAt).getTime() - new Date(x.createdAt).getTime()
+              );
+            });
+
+            // Show toast
+            toast(`New Announcement: ${a.title}`, {
+              icon: '🔔',
+              duration: 5000,
+            });
+          }
+        }
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [selectedBoard, selectedClass]);
+
+  // Persist local state
   useEffect(() => {
     localStorage.setItem('eduguide_notifications', JSON.stringify(notifications));
   }, [notifications]);
@@ -98,6 +186,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
   };
 
   const deleteNotification = (id: string) => {
+    // We only delete from local state, not from the DB (admin does that)
     setNotifications(prev => prev.filter(n => n.id !== id));
   };
 
