@@ -11,6 +11,8 @@ interface HomeworkItem {
   title: string;
   subject: string;
   file_url: string;
+  target_class?: string | null;
+  target_board?: string | null;
 }
 
 export default function AdminHomework() {
@@ -22,6 +24,8 @@ export default function AdminHomework() {
     date: format(new Date(), 'yyyy-MM-dd'),
     subject: '',
     title: '',
+    target_class: '',
+    target_board: '',
   });
 
   const [file, setFile] = useState<File | null>(null);
@@ -136,7 +140,9 @@ export default function AdminHomework() {
           date: formData.date,
           subject: formData.subject,
           title: formData.title,
-          file_url: publicUrl
+          file_url: publicUrl,
+          target_class: formData.target_class || null,
+          target_board: formData.target_board || null
         }]);
 
       if (dbError) throw dbError;
@@ -145,7 +151,7 @@ export default function AdminHomework() {
       fetchRecentHomework();
       setSuccess(true);
       setFile(null);
-      setFormData(prev => ({ ...prev, title: '' }));
+      setFormData(prev => ({ ...prev, title: '', target_class: '', target_board: '' }));
 
       const fileInput = document.getElementById('file-upload') as HTMLInputElement;
       if (fileInput) fileInput.value = '';
@@ -234,10 +240,49 @@ export default function AdminHomework() {
               />
             </div>
 
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                  Target Class
+                </label>
+                <select
+                  name="target_class"
+                  value={formData.target_class}
+                  onChange={handleInputChange}
+                  className="w-full rounded-xl border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-4 py-3 text-sm focus:border-indigo-500 focus:ring-indigo-500 dark:text-white"
+                >
+                  <option value="">All Classes</option>
+                  <option value="6">Class 6</option>
+                  <option value="7">Class 7</option>
+                  <option value="8">Class 8</option>
+                  <option value="9">Class 9</option>
+                  <option value="10">Class 10</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                  Target Board
+                </label>
+                <select
+                  name="target_board"
+                  value={formData.target_board}
+                  onChange={handleInputChange}
+                  className="w-full rounded-xl border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-4 py-3 text-sm focus:border-indigo-500 focus:ring-indigo-500 dark:text-white"
+                >
+                  <option value="">All Boards</option>
+                  <option value="CBSE">CBSE</option>
+                  <option value="STATE">State Board</option>
+                </select>
+              </div>
+            </div>
+
             <div>
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                 PDF File
               </label>
+
               <div className="mt-1 flex justify-center rounded-xl border border-dashed border-slate-300 dark:border-slate-700 px-6 py-8 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                 <div className="text-center">
                   <FileText className="mx-auto h-12 w-12 text-slate-300 dark:text-slate-600" aria-hidden="true" />
@@ -292,6 +337,9 @@ export default function AdminHomework() {
                   <div className="overflow-hidden pr-2">
                     <p className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 truncate">{hw.subject} • {hw.date}</p>
                     <p className="text-sm font-medium text-slate-800 dark:text-slate-200 truncate">{hw.title}</p>
+                    <p className="text-xs text-slate-500 mt-1">
+                      {hw.target_class ? `Class ${hw.target_class}` : 'All Classes'} • {hw.target_board || 'All Boards'}
+                    </p>
                   </div>
                   <button
                     onClick={() => handleDelete(hw.id, hw.file_url)}
