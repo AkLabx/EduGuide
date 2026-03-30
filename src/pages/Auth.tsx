@@ -1,8 +1,8 @@
 import React, { useEffect } from 'react';
 import { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
-import { Mail, Lock, User, Github } from 'lucide-react';
+import { Mail, Lock, User } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/useAuthStore';
@@ -66,12 +66,17 @@ export default function Auth() {
 
   const handleGoogleLogin = async () => {
     try {
+      // Determine the base URL (e.g., handling production vs local dev)
+      // Ensure this URL explicitly ends with '?' to enforce a clean query string boundary
+      // so Supabase appends the hash cleanly (e.g., /?#access_token=...)
+      const redirectURL = process.env.NODE_ENV === 'production'
+        ? 'https://aklabx.github.io/EduGuide/?'
+        : 'http://localhost:3000/?';
+
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          // Append a query param so Supabase appends the hash to a normal URL query string,
-          // avoiding conflicts with the React HashRouter.
-          redirectTo: `${window.location.origin}${import.meta.env.BASE_URL}`,
+          redirectTo: redirectURL,
         },
       });
       if (error) throw error;

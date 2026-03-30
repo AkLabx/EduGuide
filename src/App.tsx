@@ -1,5 +1,5 @@
-import { useEffect } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { useAppStore } from './store/useAppStore';
 import { useAuthStore } from './store/useAuthStore';
@@ -28,26 +28,59 @@ import { MainLayout } from './components/MainLayout';
 import { InstallPrompt } from './components/ui/InstallPrompt';
 import { NotificationProvider } from './contexts/NotificationContext';
 import { DownloadsProvider } from './contexts/DownloadsContext';
+import { PageLoader } from './components/ui/PageLoader';
 import Notifications from './pages/Notifications';
 import Downloads from './pages/Downloads';
 import Settings from './pages/Settings';
 
 export default function App() {
   const { theme } = useAppStore();
-  const { setSession, setLoading } = useAuthStore();
+  const { setSession } = useAuthStore();
+  const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    const initAuth = async () => {
+      // 1. Calling getSession() forces the Supabase client to inspect the current URL.
+      // 2. If it finds auth tokens in the hash (e.g., #access_token=...), it extracts them,
+      //    establishes the user session, and automatically clears the tokens from the URL history.
+      const { data: { session } } = await supabase.auth.getSession();
       setSession(session);
-    });
+
+      // 3. Once getSession() is complete (and the URL is clean), mark the app as ready.
+      setIsReady(true);
+    };
+
+    initAuth();
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      // If this code runs inside the auth popup (opened by Google OAuth),
+      // close the popup immediately after successful sign-in.
+      if (event === 'SIGNED_IN' && window.opener) {
+        window.close();
+        return;
+      }
       setSession(session);
     });
 
-    return () => subscription.unsubscribe();
+    // Listen for storage events across tabs/windows (PWA / Popup support)
+    const handleStorageChange = (event: StorageEvent) => {
+      // Supabase stores auth tokens in localStorage with keys containing 'auth-token'
+      if (event.key?.includes('auth-token') && event.newValue) {
+        // A new auth token appeared, meaning a popup authentication was successful.
+        // Reload the main window to bootstrap the app with the new authenticated state.
+        console.log('Auth token changed in storage, reloading PWA...');
+        window.location.reload();
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+
+    return () => {
+      subscription.unsubscribe();
+      window.removeEventListener('storage', handleStorageChange);
+    };
   }, [setSession]);
 
   useEffect(() => {
@@ -62,34 +95,42 @@ export default function App() {
     }
   }, [theme]);
 
+  // Render a loading spinner or initial splash screen while checking the session
+  if (!isReady) {
+    return <PageLoader />;
+  }
+
+  // Only render the HashRouter AFTER the auth client has processed any potential redirect tokens.
   return (
     <NotificationProvider>
       <DownloadsProvider>
-        <Routes>
-          <Route path="/" element={<Splash />} />
-          <Route path="/onboarding" element={<Onboarding />} />
-          <Route path="/auth" element={<Auth />} />
-          <Route path="/home" element={<Home />} />
-          
-          {/* Main App Routes with Bottom Navigation */}
-          <Route element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/subjects" element={<Subjects />} />
-            <Route path="/homework" element={<Homework />} />
-            <Route path="/homework/daily" element={<DailyHomework />} />
-            <Route path="/admin/login" element={<AdminLogin />} />
-            <Route path="/admin/dashboard" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
-            <Route path="/admin/homework" element={<AdminRoute><AdminHomework /></AdminRoute>} />
-            <Route path="/admin/announcements" element={<AdminRoute><AdminAnnouncements /></AdminRoute>} />
-            <Route path="/tests" element={<Tests />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/settings" element={<Settings />} />
-            <Route path="/notifications" element={<Notifications />} />
-            <Route path="/downloads" element={<Downloads />} />
-          </Route>
-          
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
+        <HashRouter>
+          <Routes>
+            <Route path="/" element={<Splash />} />
+            <Route path="/onboarding" element={<Onboarding />} />
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/home" element={<Home />} />
+
+            {/* Main App Routes with Bottom Navigation */}
+            <Route element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/subjects" element={<Subjects />} />
+              <Route path="/homework" element={<Homework />} />
+              <Route path="/homework/daily" element={<DailyHomework />} />
+              <Route path="/admin/login" element={<AdminLogin />} />
+              <Route path="/admin/dashboard" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
+              <Route path="/admin/homework" element={<AdminRoute><AdminHomework /></AdminRoute>} />
+              <Route path="/admin/announcements" element={<AdminRoute><AdminAnnouncements /></AdminRoute>} />
+              <Route path="/tests" element={<Tests />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/settings" element={<Settings />} />
+              <Route path="/notifications" element={<Notifications />} />
+              <Route path="/downloads" element={<Downloads />} />
+            </Route>
+
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </HashRouter>
         
         <InstallPrompt />
         
