@@ -5,6 +5,9 @@ import { BookMarked, GraduationCap, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent } from '@/components/ui/Card';
 import { useAppStore } from '@/store/useAppStore';
+import { useAuthStore } from '@/store/useAuthStore';
+import { supabase } from '@/lib/supabase';
+import { useEffect } from 'react';
 import toast from 'react-hot-toast';
 
 const boards = [
@@ -25,10 +28,53 @@ export default function Home() {
     setStep(2);
   };
 
-  const handleClassSelect = (cls: string) => {
+  const { session } = useAuthStore();
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    // If the user already has a board and class saved in Supabase, sync it
+    const fetchProfile = async () => {
+      if (session?.user?.id) {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('board, class_name')
+          .eq('id', session.user.id)
+          .single();
+
+        if (data && data.board && data.class_name && !selectedBoard && !selectedClass) {
+           setSelectedBoard(data.board as 'CBSE' | 'STATE');
+           setSelectedClass(data.class_name);
+           navigate('/dashboard');
+        }
+      }
+    };
+    fetchProfile();
+  }, [session, selectedBoard, selectedClass, navigate, setSelectedBoard, setSelectedClass]);
+
+  const handleClassSelect = async (cls: string) => {
+    if (!session?.user?.id) {
+      toast.error('You must be logged in to save your selection.');
+      navigate('/auth');
+      return;
+    }
+
+    setLoading(true);
     setSelectedClass(cls);
-    toast.success(`Class ${cls} ${selectedBoard} selected!`);
-    navigate('/dashboard');
+
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ board: selectedBoard, class_name: cls, updated_at: new Date().toISOString() })
+        .eq('id', session.user.id);
+
+      if (error) throw error;
+
+      toast.success(`Class ${cls} ${selectedBoard} selected!`);
+      navigate('/dashboard');
+    } catch (err) {
+      toast.error('Failed to save selection. Please try again.');
+      setLoading(false);
+    }
   };
 
   return (
@@ -98,6 +144,7 @@ export default function Home() {
                 <button
                   key={cls}
                   onClick={() => handleClassSelect(cls)}
+                  disabled={loading}
                   className={`flex aspect-square flex-col items-center justify-center rounded-2xl border-2 text-xl font-bold transition-all hover:scale-105 active:scale-95 ${
                     selectedClass === cls 
                       ? 'border-indigo-600 bg-indigo-600 text-white shadow-lg shadow-indigo-200 dark:border-indigo-500 dark:bg-indigo-500 dark:shadow-none' 

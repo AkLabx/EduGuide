@@ -2,6 +2,9 @@ import { useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { useAppStore } from './store/useAppStore';
+import { useAuthStore } from './store/useAuthStore';
+import { supabase } from './lib/supabase';
+import Auth from './pages/Auth';
 
 // Pages
 import Splash from './pages/Splash';
@@ -18,6 +21,7 @@ import AdminDashboard from './pages/AdminDashboard';
 import AdminAnnouncements from './pages/AdminAnnouncements';
 import AdminLogin from './pages/AdminLogin';
 import { AdminRoute } from './components/AdminRoute';
+import { ProtectedRoute } from './components/ProtectedRoute';
 
 // Components & Contexts
 import { MainLayout } from './components/MainLayout';
@@ -29,6 +33,21 @@ import Downloads from './pages/Downloads';
 
 export default function App() {
   const { theme } = useAppStore();
+  const { setSession, setLoading } = useAuthStore();
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, [setSession]);
 
   useEffect(() => {
     const root = window.document.documentElement;
@@ -48,10 +67,11 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Splash />} />
           <Route path="/onboarding" element={<Onboarding />} />
+          <Route path="/auth" element={<Auth />} />
           <Route path="/home" element={<Home />} />
           
           {/* Main App Routes with Bottom Navigation */}
-          <Route element={<MainLayout />}>
+          <Route element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/subjects" element={<Subjects />} />
             <Route path="/homework" element={<Homework />} />
