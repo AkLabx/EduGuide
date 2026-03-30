@@ -71,7 +71,7 @@ export default function Auth() {
         options: {
           // Append a query param so Supabase appends the hash to a normal URL query string,
           // avoiding conflicts with the React HashRouter.
-          redirectTo: `${window.location.origin}${import.meta.env.BASE_URL}?auth=success`,
+          redirectTo: `${window.location.origin}${import.meta.env.BASE_URL}`,
         },
       });
       if (error) throw error;
