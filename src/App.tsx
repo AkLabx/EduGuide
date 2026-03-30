@@ -30,6 +30,7 @@ import { NotificationProvider } from './contexts/NotificationContext';
 import { DownloadsProvider } from './contexts/DownloadsContext';
 import Notifications from './pages/Notifications';
 import Downloads from './pages/Downloads';
+import Settings from './pages/Settings';
 
 export default function App() {
   const { theme } = useAppStore();
@@ -82,6 +83,7 @@ export default function App() {
             <Route path="/admin/announcements" element={<AdminRoute><AdminAnnouncements /></AdminRoute>} />
             <Route path="/tests" element={<Tests />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/settings" element={<Settings />} />
             <Route path="/notifications" element={<Notifications />} />
             <Route path="/downloads" element={<Downloads />} />
           </Route>

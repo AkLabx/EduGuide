@@ -1,14 +1,44 @@
+import { useState, useEffect } from 'react';
 import { useAppStore } from '@/store/useAppStore';
+import { useAuthStore } from '@/store/useAuthStore';
+import { supabase } from '@/lib/supabase';
 import { useNotifications } from '@/contexts/NotificationContext';
-import { Moon, Sun, Monitor, LogOut, ChevronRight, Bell, BookOpen, AlertCircle } from 'lucide-react';
+import { Moon, Sun, Monitor, LogOut, ChevronRight, Bell, BookOpen, AlertCircle, Settings, Camera } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { Logo } from '@/components/ui/Logo';
+import AvatarUploadModal from '@/components/AvatarUploadModal';
 
 export default function Profile() {
   const { theme, setTheme, selectedBoard, selectedClass, reset } = useAppStore();
+  const { user } = useAuthStore();
   const { preferences, updatePreferences } = useNotifications();
   const navigate = useNavigate();
+
+  const [profile, setProfile] = useState<any>(null);
+  const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      loadProfile();
+    }
+  }, [user]);
+
+  const loadProfile = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('full_name, avatar_url')
+        .eq('id', user?.id)
+        .single();
+
+      if (!error && data) {
+        setProfile(data);
+      }
+    } catch (error) {
+      console.error('Error loading profile:', error);
+    }
+  };
 
   const handleLogout = () => {
     reset();
@@ -21,14 +51,33 @@ export default function Profile() {
       <div className="mx-auto max-w-md">
         <h1 className="mb-8 text-3xl font-bold text-slate-900 dark:text-white">Profile</h1>
         
-        <div className="mb-8 flex items-center space-x-4 rounded-2xl bg-white p-5 shadow-[0_2px_8px_rgba(0,0,0,0.06)] dark:bg-slate-900">
-          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-indigo-50 shadow-inner dark:bg-slate-800">
-            <Logo className="h-10 w-10" />
+        <div className="mb-8 flex items-center space-x-4 rounded-2xl bg-white p-5 shadow-[0_2px_8px_rgba(0,0,0,0.06)] dark:bg-slate-900 relative">
+          <div
+            className="group relative flex h-16 w-16 cursor-pointer items-center justify-center overflow-hidden rounded-full bg-indigo-50 shadow-inner dark:bg-slate-800"
+            onClick={() => setIsAvatarModalOpen(true)}
+          >
+            {profile?.avatar_url ? (
+              <img src={profile.avatar_url} alt="Profile" className="h-full w-full object-cover" />
+            ) : (
+              <Logo className="h-10 w-10" />
+            )}
+            <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
+              <Camera size={20} className="text-white" />
+            </div>
           </div>
-          <div>
-            <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Student User</h2>
+          <div className="flex-1">
+            <h2 className="text-xl font-semibold text-slate-900 dark:text-white">
+              {profile?.full_name || 'Student User'}
+            </h2>
             <p className="text-sm font-medium text-indigo-600 dark:text-indigo-400">Class {selectedClass} • {selectedBoard}</p>
           </div>
+          <button
+            onClick={() => navigate('/settings')}
+            className="rounded-full bg-slate-50 p-2 text-slate-400 hover:bg-slate-100 hover:text-indigo-600 dark:bg-slate-800 dark:hover:bg-slate-700 dark:hover:text-indigo-400"
+            aria-label="Settings"
+          >
+            <Settings size={20} />
+          </button>
         </div>
 
         <section className="mb-8">
@@ -154,6 +203,12 @@ export default function Profile() {
           </div>
         </section>
       </div>
+
+      <AvatarUploadModal
+        isOpen={isAvatarModalOpen}
+        onClose={() => setIsAvatarModalOpen(false)}
+        onUploadSuccess={(url) => setProfile((prev: any) => ({ ...prev, avatar_url: url }))}
+      />
     </div>
   );
 }
