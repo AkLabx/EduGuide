@@ -23,6 +23,21 @@ export default function AdminDashboard() {
 
       <main className="px-4 pt-6">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+
+          {/* Study Materials Card */}
+          <div
+            className="flex cursor-pointer flex-col items-center justify-center space-y-3 rounded-2xl bg-white p-6 shadow-sm transition-transform hover:scale-[1.02] active:scale-95 dark:bg-slate-900"
+            onClick={() => navigate('/admin/study-materials')}
+          >
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 dark:bg-emerald-900/50 dark:text-emerald-400">
+              <PlusCircle size={32} />
+            </div>
+            <div className="text-center">
+              <h2 className="text-lg font-bold text-slate-900 dark:text-white">Study Materials</h2>
+              <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Upload notes, PDFs, and video links</p>
+            </div>
+          </div>
+
           {/* Homework Card */}
           <div
             className="flex cursor-pointer flex-col items-center justify-center space-y-3 rounded-2xl bg-white p-6 shadow-sm transition-transform hover:scale-[1.02] active:scale-95 dark:bg-slate-900"
