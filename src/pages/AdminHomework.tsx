@@ -66,7 +66,7 @@ export default function AdminHomework() {
         const filePath = decodeURIComponent(pathParts[1]);
 
         const { error: storageError } = await supabase.storage
-          .from('homework_files')
+          .from('homework')
           .remove([filePath]);
 
         if (storageError) console.error('Storage deletion error:', storageError);
@@ -125,13 +125,13 @@ export default function AdminHomework() {
       const filePath = `homework/${formData.date}/${fileName}`;
 
       const { error: uploadError, data: uploadData } = await supabase.storage
-        .from('homework_files')
+        .from('homework')
         .upload(filePath, file);
 
       if (uploadError) throw uploadError;
 
       const { data: { publicUrl } } = supabase.storage
-        .from('homework_files')
+        .from('homework')
         .getPublicUrl(filePath);
 
       const { error: dbError } = await supabase
@@ -253,6 +253,11 @@ export default function AdminHomework() {
                   className="w-full rounded-xl border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-4 py-3 text-sm focus:border-indigo-500 focus:ring-indigo-500 dark:text-white"
                 >
                   <option value="">All Classes</option>
+                  <option value="1">Class 1</option>
+                  <option value="2">Class 2</option>
+                  <option value="3">Class 3</option>
+                  <option value="4">Class 4</option>
+                  <option value="5">Class 5</option>
                   <option value="6">Class 6</option>
                   <option value="7">Class 7</option>
                   <option value="8">Class 8</option>

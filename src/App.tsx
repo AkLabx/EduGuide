@@ -17,6 +17,8 @@ import Profile from './pages/Profile';
 import Homework from './pages/Homework';
 import DailyHomework from './pages/DailyHomework';
 import AdminHomework from './pages/AdminHomework';
+import AdminStudyMaterials from './pages/AdminStudyMaterials';
+
 import AdminDashboard from './pages/AdminDashboard';
 import AdminAnnouncements from './pages/AdminAnnouncements';
 import AdminLogin from './pages/AdminLogin';
@@ -120,6 +122,8 @@ export default function App() {
               <Route path="/admin/login" element={<AdminLogin />} />
               <Route path="/admin/dashboard" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
               <Route path="/admin/homework" element={<AdminRoute><AdminHomework /></AdminRoute>} />
+              <Route path="/admin/study-materials" element={<AdminRoute><AdminStudyMaterials /></AdminRoute>} />
+
               <Route path="/admin/announcements" element={<AdminRoute><AdminAnnouncements /></AdminRoute>} />
               <Route path="/tests" element={<Tests />} />
               <Route path="/profile" element={<Profile />} />
