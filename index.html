@@ -7,9 +7,161 @@
     <link rel="icon" href="/favicon.ico" sizes="any" />
     <link rel="icon" href="/eduguide.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
+    <style>
+      #desktop-mode-warning {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background-color: #f4f0ff;
+        z-index: 99999;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        font-family: 'Outfit', ui-sans-serif, system-ui, sans-serif;
+      }
+      .warning-card {
+        background: white;
+        border-radius: 20px;
+        padding: 32px;
+        max-width: 400px;
+        width: 100%;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+        text-align: center;
+      }
+      .warning-title {
+        color: #0f172a;
+        font-size: 24px;
+        font-weight: 700;
+        margin-bottom: 16px;
+        margin-top: 0;
+      }
+      .warning-desc {
+        color: #475569;
+        font-size: 16px;
+        line-height: 1.5;
+        margin-bottom: 24px;
+      }
+      .warning-steps-card {
+        background-color: #f8fafc;
+        border-radius: 12px;
+        padding: 20px;
+        text-align: left;
+        margin-bottom: 24px;
+      }
+      .warning-steps {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+      .warning-steps li {
+        color: #334155;
+        font-size: 15px;
+        margin-bottom: 16px;
+        position: relative;
+        padding-left: 28px;
+        line-height: 1.5;
+      }
+      .warning-steps li:last-child {
+        margin-bottom: 0;
+      }
+      .warning-steps li span.num {
+        position: absolute;
+        left: 0;
+        top: 0;
+        color: #64748b;
+      }
+      .warning-btn {
+        background-color: #8b45ff;
+        color: white;
+        border: none;
+        border-radius: 9999px;
+        padding: 12px 24px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        width: 100%;
+        transition: background-color 0.2s;
+        font-family: inherit;
+      }
+      .warning-btn:hover {
+        background-color: #7c22ff;
+      }
+      .warning-btn:active {
+        background-color: #6b0ce6;
+      }
+      @media (prefers-color-scheme: dark) {
+        #desktop-mode-warning {
+          background-color: #020617;
+        }
+        .warning-card {
+          background-color: #0f172a;
+          box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+        }
+        .warning-title {
+          color: #f8fafc;
+        }
+        .warning-desc {
+          color: #94a3b8;
+        }
+        .warning-steps-card {
+          background-color: #1e293b;
+        }
+        .warning-steps li {
+          color: #cbd5e1;
+        }
+        .warning-steps li span.num {
+          color: #94a3b8;
+        }
+      }
+    </style>
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+
+    <div id="desktop-mode-warning">
+      <div class="warning-card">
+        <h2 class="warning-title">App Experience Paused</h2>
+        <p class="warning-desc">It looks like you have 'Desktop site' enabled in your browser settings. To enjoy <strong>EduGuide</strong> as a native app, please follow these steps:</p>
+
+        <div class="warning-steps-card">
+          <ul class="warning-steps">
+            <li><span class="num">1.</span> Open your regular Chrome browser app.</li>
+            <li><span class="num">2.</span> Tap the three-dot menu in the top right.</li>
+            <li><span class="num">3.</span> Uncheck <strong>Desktop site</strong>.</li>
+            <li><span class="num">4.</span> Restart this app.</li>
+          </ul>
+        </div>
+
+        <button class="warning-btn" onclick="window.location.reload()">Reload App</button>
+      </div>
+    </div>
+
+    <script>
+      function checkDesktopMode() {
+        var isStandalone = window.matchMedia("(display-mode: standalone)").matches ||
+                           window.navigator.standalone ||
+                           document.referrer.includes("android-app://");
+
+        var isMobileWidthForce = window.innerWidth > window.screen.width;
+        var hasTouch = navigator.maxTouchPoints > 0;
+
+        var warningEl = document.getElementById("desktop-mode-warning");
+        var rootEl = document.getElementById("root");
+
+        if (isStandalone && isMobileWidthForce && hasTouch) {
+          if (warningEl) warningEl.style.display = "flex";
+          if (rootEl) rootEl.style.display = "none";
+        } else {
+          if (warningEl) warningEl.style.display = "none";
+          if (rootEl) rootEl.style.display = "block";
+        }
+      }
+
+      window.addEventListener("DOMContentLoaded", checkDesktopMode);
+      window.addEventListener("resize", checkDesktopMode);
+    </script>
   </body>
 </html>
