@@ -28,7 +28,7 @@ export default function Home() {
     setStep(2);
   };
 
-  const { session } = useAuthStore();
+  const { session, isLoading: isAuthLoading } = useAuthStore();
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -52,6 +52,11 @@ export default function Home() {
   }, [session, selectedBoard, selectedClass, navigate, setSelectedBoard, setSelectedClass]);
 
   const handleClassSelect = async (cls: string) => {
+    if (isAuthLoading) {
+      toast.loading('Checking authentication...', { id: 'auth-check' });
+      return;
+    }
+    toast.dismiss('auth-check');
     if (!session?.user?.id) {
       toast.error('You must be logged in to save your selection.');
       navigate('/auth');

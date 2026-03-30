@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'motion/react';
@@ -6,6 +6,7 @@ import { Mail, Lock, User, Github } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/useAuthStore';
+import { useAppStore } from '@/store/useAppStore';
 import toast from 'react-hot-toast';
 import { Logo } from '@/components/ui/Logo';
 
@@ -16,6 +17,18 @@ export default function Auth() {
   const [fullName, setFullName] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { session } = useAuthStore();
+  const { selectedBoard, selectedClass } = useAppStore();
+
+  useEffect(() => {
+    if (session) {
+      if (selectedBoard && selectedClass) {
+        navigate('/dashboard', { replace: true });
+      } else {
+        navigate('/home', { replace: true });
+      }
+    }
+  }, [session, selectedBoard, selectedClass, navigate]);
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,9 +56,7 @@ export default function Auth() {
         toast.success('Account created! Please verify your email.');
       }
 
-      // We don't navigate here directly. The onAuthStateChange listener in App.tsx
-      // will update the store, and a ProtectedRoute/Splash logic will handle redirects.
-      navigate('/home');
+      // We don't navigate here directly. The useEffect above will handle the redirect once the session updates.
     } catch (error: any) {
       toast.error(error.message || 'An error occurred during authentication');
     } finally {
@@ -58,7 +69,9 @@ export default function Auth() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}${import.meta.env.BASE_URL}`,
+          // Append a query param so Supabase appends the hash to a normal URL query string,
+          // avoiding conflicts with the React HashRouter.
+          redirectTo: `${window.location.origin}${import.meta.env.BASE_URL}?auth=success`,
         },
       });
       if (error) throw error;
