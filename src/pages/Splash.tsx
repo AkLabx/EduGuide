@@ -3,15 +3,21 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { Logo } from '@/components/ui/Logo';
 import { useAppStore } from '@/store/useAppStore';
+import { useAuthStore } from '@/store/useAuthStore';
 
 export default function Splash() {
   const navigate = useNavigate();
   const { hasSeenOnboarding, selectedBoard, selectedClass } = useAppStore();
+  const { session, isLoading } = useAuthStore();
 
   useEffect(() => {
+    if (isLoading) return; // Wait for auth to initialize
+
     const timer = setTimeout(() => {
       if (!hasSeenOnboarding) {
         navigate('/onboarding');
+      } else if (!session) {
+        navigate('/auth');
       } else if (!selectedBoard || !selectedClass) {
         navigate('/home');
       } else {
@@ -20,7 +26,7 @@ export default function Splash() {
     }, 2500);
 
     return () => clearTimeout(timer);
-  }, [navigate, hasSeenOnboarding, selectedBoard, selectedClass]);
+  }, [navigate, hasSeenOnboarding, selectedBoard, selectedClass, session, isLoading]);
 
   return (
     <div className="flex min-h-[100dvh] flex-col items-center justify-center bg-indigo-600 text-white dark:bg-slate-950 overflow-hidden relative">

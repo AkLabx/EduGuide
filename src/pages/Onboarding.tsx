@@ -42,7 +42,7 @@ export default function Onboarding() {
         colors: ['#8b45ff', '#10b981', '#f59e0b'] // Using brand color
       });
       setHasSeenOnboarding(true);
-      setTimeout(() => navigate('/home'), 1000);
+      setTimeout(() => navigate('/auth'), 1000);
     } else {
       setDirection(1);
       setCurrentSlide(prev => prev + 1);
