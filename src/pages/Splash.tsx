@@ -11,19 +11,21 @@ export default function Splash() {
   const { session, isLoading } = useAuthStore();
 
   useEffect(() => {
-    if (isLoading) return; // Wait for auth to initialize
+    // We only want to transition away if auth has finished loading
+    if (isLoading) return;
 
+    // Minimum display time for the splash screen (e.g. 1.5s) to avoid ungraceful flashing
     const timer = setTimeout(() => {
       if (!hasSeenOnboarding) {
-        navigate('/onboarding');
+        navigate('/onboarding', { replace: true });
       } else if (!session) {
-        navigate('/auth');
+        navigate('/auth', { replace: true });
       } else if (!selectedBoard || !selectedClass) {
-        navigate('/home');
+        navigate('/home', { replace: true });
       } else {
-        navigate('/dashboard');
+        navigate('/dashboard', { replace: true });
       }
-    }, 2500);
+    }, 1500);
 
     return () => clearTimeout(timer);
   }, [navigate, hasSeenOnboarding, selectedBoard, selectedClass, session, isLoading]);
