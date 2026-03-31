@@ -216,36 +216,116 @@ export default function Subjects() {
                   </p>
                 </div>
               ) : (
-                chapters.map((chapterName) => {
-                  const chapterMaterials = chaptersMap.get(chapterName) || [];
-                  const pdfCount = chapterMaterials.filter(m => m.type === 'pdf' || m.type === 'notes').length;
-                  const videoCount = chapterMaterials.filter(m => m.type === 'video').length;
+                (() => {
+                  // Group chapters by part/unit/chapter number pattern
+                  const groupedChapters = new Map<string, string[]>();
+                  const ungroupedChapters: string[] = [];
 
-                  return (
-                    <div
-                      key={chapterName}
-                      onClick={() => setSelectedChapter(chapterName)}
-                      className="flex cursor-pointer items-center justify-between rounded-2xl bg-white p-5 shadow-sm transition-shadow hover:shadow-md dark:bg-slate-900 border border-slate-100 dark:border-slate-800"
-                    >
-                      <div className="flex items-center space-x-4 flex-1 overflow-hidden">
-                        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-500 dark:bg-indigo-900/30 dark:text-indigo-400">
-                          <FolderOpen size={24} />
+                  chapters.forEach(chapterName => {
+                    const match = chapterName.match(/^(Part \d+|Unit \d+|\d+):\s*(.+)$/i);
+                    if (match) {
+                      const groupName = match[1];
+                      if (!groupedChapters.has(groupName)) {
+                        groupedChapters.set(groupName, []);
+                      }
+                      groupedChapters.get(groupName)?.push(chapterName);
+                    } else {
+                      ungroupedChapters.push(chapterName);
+                    }
+                  });
+
+                  // If there's no grouping detected, just render the list normally
+                  if (groupedChapters.size === 0) {
+                    return chapters.map((chapterName) => {
+                      const chapterMaterials = chaptersMap.get(chapterName) || [];
+                      const pdfCount = chapterMaterials.filter(m => m.type === 'pdf' || m.type === 'notes').length;
+                      const videoCount = chapterMaterials.filter(m => m.type === 'video').length;
+
+                      return (
+                        <div
+                          key={chapterName}
+                          onClick={() => setSelectedChapter(chapterName)}
+                          className="flex cursor-pointer items-center justify-between rounded-2xl bg-white p-5 shadow-sm transition-shadow hover:shadow-md dark:bg-slate-900 border border-slate-100 dark:border-slate-800"
+                        >
+                          <div className="flex items-center space-x-4 flex-1 overflow-hidden">
+                            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-500 dark:bg-indigo-900/30 dark:text-indigo-400">
+                              <FolderOpen size={24} />
+                            </div>
+                            <div className="flex-1 overflow-hidden pr-2">
+                              <h3 className="truncate text-base font-bold text-slate-900 dark:text-white">
+                                {chapterName}
+                              </h3>
+                              <div className="mt-1 flex items-center space-x-3 text-xs text-slate-500 dark:text-slate-400">
+                                {pdfCount > 0 && <span>{pdfCount} Notes/PDFs</span>}
+                                {pdfCount > 0 && videoCount > 0 && <span>•</span>}
+                                {videoCount > 0 && <span>{videoCount} Videos</span>}
+                              </div>
+                            </div>
+                          </div>
+                          <ChevronLeft size={20} className="text-slate-300 dark:text-slate-600 rotate-180 shrink-0" />
                         </div>
-                        <div className="flex-1 overflow-hidden pr-2">
-                          <h3 className="truncate text-base font-bold text-slate-900 dark:text-white">
-                            {chapterName}
-                          </h3>
-                          <div className="mt-1 flex items-center space-x-3 text-xs text-slate-500 dark:text-slate-400">
-                            {pdfCount > 0 && <span>{pdfCount} Notes/PDFs</span>}
-                            {pdfCount > 0 && videoCount > 0 && <span>•</span>}
-                            {videoCount > 0 && <span>{videoCount} Videos</span>}
+                      );
+                    });
+                  }
+
+                  // Render grouped items
+                  const renderChapterItem = (chapterName: string, displayName?: string) => {
+                    const chapterMaterials = chaptersMap.get(chapterName) || [];
+                    const pdfCount = chapterMaterials.filter(m => m.type === 'pdf' || m.type === 'notes').length;
+                    const videoCount = chapterMaterials.filter(m => m.type === 'video').length;
+
+                    return (
+                      <div
+                        key={chapterName}
+                        onClick={() => setSelectedChapter(chapterName)}
+                        className="flex cursor-pointer items-center justify-between rounded-2xl bg-white p-5 shadow-sm transition-shadow hover:shadow-md dark:bg-slate-900 border border-slate-100 dark:border-slate-800"
+                      >
+                        <div className="flex items-center space-x-4 flex-1 overflow-hidden">
+                          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-500 dark:bg-indigo-900/30 dark:text-indigo-400">
+                            <FolderOpen size={24} />
+                          </div>
+                          <div className="flex-1 overflow-hidden pr-2">
+                            <h3 className="truncate text-base font-bold text-slate-900 dark:text-white">
+                              {displayName || chapterName}
+                            </h3>
+                            <div className="mt-1 flex items-center space-x-3 text-xs text-slate-500 dark:text-slate-400">
+                              {pdfCount > 0 && <span>{pdfCount} Notes/PDFs</span>}
+                              {pdfCount > 0 && videoCount > 0 && <span>•</span>}
+                              {videoCount > 0 && <span>{videoCount} Videos</span>}
+                            </div>
                           </div>
                         </div>
+                        <ChevronLeft size={20} className="text-slate-300 dark:text-slate-600 rotate-180 shrink-0" />
                       </div>
-                      <ChevronLeft size={20} className="text-slate-300 dark:text-slate-600 rotate-180 shrink-0" />
+                    );
+                  };
+
+                  return (
+                    <div className="space-y-6">
+                      {Array.from(groupedChapters.entries()).map(([groupName, groupChapters]) => (
+                        <div key={groupName} className="space-y-3">
+                          <h4 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider pl-2">{groupName}</h4>
+                          <div className="space-y-3">
+                            {groupChapters.map(chapterName => {
+                              const match = chapterName.match(/^(?:Part \d+|Unit \d+|\d+):\s*(.+)$/i);
+                              const displayName = match ? match[1] : chapterName;
+                              return renderChapterItem(chapterName, displayName);
+                            })}
+                          </div>
+                        </div>
+                      ))}
+
+                      {ungroupedChapters.length > 0 && (
+                        <div className="space-y-3 mt-6">
+                          <h4 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider pl-2">Other Chapters</h4>
+                          <div className="space-y-3">
+                            {ungroupedChapters.map(chapterName => renderChapterItem(chapterName))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   );
-                })
+                })()
               )}
             </motion.div>
           ) : (
