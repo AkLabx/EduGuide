@@ -63,7 +63,7 @@ export default function Subjects() {
 
       if (selectedBoard) {
         // If board is specified, get materials for that board OR materials for all boards (null/empty)
-        query = query.or(`target_board.eq.${profile.board},target_board.eq.,target_board.is.null`);
+        query = query.or(`target_board.eq.${selectedBoard},target_board.is.null`);
       }
 
       const { data, error } = await query;
