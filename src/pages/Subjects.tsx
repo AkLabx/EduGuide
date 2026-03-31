@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { BookOpen, ChevronLeft, Download, FileText, PlayCircle, CheckCircle2, Loader2, FolderOpen, AlertCircle } from 'lucide-react';
+import { BookOpen, ChevronLeft, Download, FileText, PlayCircle, CheckCircle2, Loader2, FolderOpen, AlertCircle, Plus, Minus } from 'lucide-react';
+import { useAuthStore } from '../store/useAuthStore';
 import { useDownloads } from '../contexts/DownloadsContext';
 import { useAppStore } from '../store/useAppStore';
 import { supabase } from '../lib/supabase';
@@ -42,10 +43,50 @@ export default function Subjects() {
 
   const { isDownloaded, isDownloading, downloadItem } = useDownloads();
   const { selectedClass, selectedBoard } = useAppStore();
+  const { user, profile, setProfile } = useAuthStore();
 
   useEffect(() => {
     fetchMaterials();
   }, [selectedClass, selectedBoard]);
+
+  const [updatingSubject, setUpdatingSubject] = useState<string | null>(null);
+
+  const toggleSubject = async (e: React.MouseEvent, subjectName: string) => {
+    e.stopPropagation(); // Prevent opening the subject
+    if (!user || !profile) {
+      toast.error('You must be logged in to save subjects.');
+      return;
+    }
+
+    setUpdatingSubject(subjectName);
+    try {
+      const currentSubjects = profile.selected_subjects || [];
+      const isSelected = currentSubjects.includes(subjectName);
+
+      const newSubjects = isSelected
+        ? currentSubjects.filter(s => s !== subjectName)
+        : [...currentSubjects, subjectName];
+
+      const { error } = await supabase
+        .from('profiles')
+        .update({ selected_subjects: newSubjects })
+        .eq('id', user.id);
+
+      if (error) throw error;
+
+      // Update local store
+      setProfile({ ...profile, selected_subjects: newSubjects });
+
+      toast.success(isSelected ? `Removed ${subjectName} from Dashboard` : `Added ${subjectName} to Dashboard`, {
+        icon: isSelected ? '➖' : '✅'
+      });
+    } catch (error) {
+      console.error('Error updating subjects:', error);
+      toast.error('Failed to update subjects');
+    } finally {
+      setUpdatingSubject(null);
+    }
+  };
 
   const fetchMaterials = async () => {
     try {
@@ -55,7 +96,7 @@ export default function Subjects() {
       // Filter by user's class and board if available
       if (selectedClass) {
         // Just extract the number if "Class 10" format is used
-        const classNum = profile.class_name.replace(/[^0-9]/g, '');
+        const classNum = profile?.class_name?.replace(/[^0-9]/g, '') || selectedClass?.replace(/[^0-9]/g, '') || '10';
         if (classNum) {
           query = query.eq('target_class', classNum);
         }
@@ -172,6 +213,8 @@ export default function Subjects() {
                 allAvailableSubjects.map((subjectName) => {
                   const style = getSubjectColor(subjectName);
                   const count = materials.filter(m => m.subject === subjectName).length;
+                  const isSelected = profile?.selected_subjects?.includes(subjectName);
+                  const isUpdating = updatingSubject === subjectName;
 
                   return (
                     <div
@@ -192,6 +235,24 @@ export default function Subjects() {
                             </p>
                           </div>
                         </div>
+                        <button
+                          onClick={(e) => toggleSubject(e, subjectName)}
+                          disabled={isUpdating}
+                          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-colors ${
+                            isSelected
+                              ? 'bg-indigo-100 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400'
+                              : 'bg-slate-100 text-slate-500 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700'
+                          }`}
+                          title={isSelected ? "Remove from Dashboard" : "Add to Dashboard"}
+                        >
+                          {isUpdating ? (
+                            <Loader2 size={20} className="animate-spin" />
+                          ) : isSelected ? (
+                            <Minus size={20} />
+                          ) : (
+                            <Plus size={20} />
+                          )}
+                        </button>
                       </div>
                     </div>
                   );

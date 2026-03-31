@@ -10,21 +10,17 @@ import {
   LogOut,
   Bell,
   ChevronRight,
-  Download
+  Download,
+  Plus
 } from 'lucide-react';
 import { Logo } from "@/components/ui/Logo";
 import { useAppStore } from '@/store/useAppStore';
+import { useAuthStore } from '@/store/useAuthStore';
 import { PageLoader } from '@/components/ui/PageLoader';
 import { useNotifications } from '@/contexts/NotificationContext';
 import toast from 'react-hot-toast';
 
-const subjects = [
-  { id: 'maths', name: 'Mathematics', color: 'bg-blue-500' },
-  { id: 'science', name: 'Science', color: 'bg-emerald-500' },
-  { id: 'english', name: 'English', color: 'bg-amber-500' },
-  { id: 'social', name: 'Social Studies', color: 'bg-rose-500' },
-  { id: 'hindi', name: 'Hindi', color: 'bg-purple-500' },
-];
+
 
 const features = [
   { id: 'notes', name: 'Chapter Notes', icon: FileText, color: 'text-blue-600', bg: 'bg-blue-100', path: '/subjects' },
@@ -36,6 +32,7 @@ const features = [
 export default function Dashboard() {
   const navigate = useNavigate();
   const { selectedBoard, selectedClass, reset } = useAppStore();
+  const { profile } = useAuthStore();
   const { unreadCount } = useNotifications();
   const [isLoading, setIsLoading] = useState(true);
 
@@ -52,6 +49,20 @@ export default function Dashboard() {
     
     return () => clearTimeout(timer);
   }, [selectedBoard, selectedClass, navigate]);
+
+
+  const getSubjectColor = (subjectName: string) => {
+    const colors = [
+      { name: 'Mathematics', color: 'bg-blue-500' },
+      { name: 'Science', color: 'bg-emerald-500' },
+      { name: 'English', color: 'bg-amber-500' },
+      { name: 'Hindi', color: 'bg-rose-500' },
+      { name: 'Social Science', color: 'bg-purple-500' },
+      { name: 'Sanskrit', color: 'bg-orange-500' }
+    ];
+    const found = colors.find(c => c.name.toLowerCase() === subjectName.toLowerCase());
+    return found ? found.color : 'bg-indigo-500';
+  };
 
   const handleLogout = () => {
     reset();
@@ -121,35 +132,59 @@ export default function Dashboard() {
           </div>
         </section>
 
-        {/* Subjects */}
+                {/* Subjects */}
         <section>
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-lg font-bold text-slate-900 dark:text-white">Your Subjects</h2>
-            <button className="text-sm font-medium text-indigo-600 dark:text-indigo-400">View All</button>
+            <button
+              onClick={() => navigate('/subjects')}
+              className="text-sm font-medium text-indigo-600 dark:text-indigo-400"
+            >
+              Manage
+            </button>
           </div>
           
           <div className="grid gap-4">
-            {subjects.map((subject, index) => (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-                key={subject.id}
-                className="flex cursor-pointer items-center overflow-hidden rounded-2xl bg-white shadow-[0_2px_8px_rgba(0,0,0,0.06)] transition-all active:scale-[0.98] dark:bg-slate-900"
-                onClick={() => navigate('/subjects')}
-              >
-                <div className={`w-3 self-stretch ${subject.color}`} />
-                <div className="flex flex-1 items-center justify-between p-5">
-                  <div>
-                    <h3 className="text-lg font-bold text-slate-900 dark:text-white">{subject.name}</h3>
-                    <p className="text-sm text-slate-500 dark:text-slate-400">12 Chapters • 45 Videos</p>
-                  </div>
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-50 text-slate-400 dark:bg-slate-800 dark:text-slate-500">
-                    <ChevronRight size={20} />
-                  </div>
+            {(!profile?.selected_subjects || profile.selected_subjects.length === 0) ? (
+              <div className="rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-800 p-8 text-center bg-white dark:bg-slate-900">
+                <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-500">
+                  <BookOpen size={24} />
                 </div>
-              </motion.div>
-            ))}
+                <h3 className="mb-1 text-base font-medium text-slate-900 dark:text-white">No Subjects Added</h3>
+                <p className="mb-4 text-sm text-slate-500 dark:text-slate-400">
+                  Add subjects to your dashboard for quick access.
+                </p>
+                <button
+                  onClick={() => navigate('/subjects')}
+                  className="inline-flex items-center space-x-2 rounded-xl bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-indigo-700 active:scale-95"
+                >
+                  <Plus size={16} />
+                  <span>Add Subjects</span>
+                </button>
+              </div>
+            ) : (
+              profile.selected_subjects.map((subjectName, index) => (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                  key={subjectName}
+                  className="flex cursor-pointer items-center overflow-hidden rounded-2xl bg-white shadow-[0_2px_8px_rgba(0,0,0,0.06)] transition-all active:scale-[0.98] dark:bg-slate-900"
+                  onClick={() => navigate('/subjects')}
+                >
+                  <div className={`w-3 self-stretch ${getSubjectColor(subjectName)}`} />
+                  <div className="flex flex-1 items-center justify-between p-5">
+                    <div>
+                      <h3 className="text-lg font-bold text-slate-900 dark:text-white">{subjectName}</h3>
+                      <p className="text-sm text-slate-500 dark:text-slate-400">View Materials</p>
+                    </div>
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-50 text-slate-400 dark:bg-slate-800 dark:text-slate-500">
+                      <ChevronRight size={20} />
+                    </div>
+                  </div>
+                </motion.div>
+              ))
+            )}
           </div>
         </section>
       </main>
