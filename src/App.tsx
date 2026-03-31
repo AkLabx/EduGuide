@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { useAppStore } from './store/useAppStore';
-import { useAuthStore } from './store/useAuthStore';
+import { useAuthStore, UserProfile } from './store/useAuthStore';
 import { supabase } from './lib/supabase';
 import Auth from './pages/Auth';
 
@@ -45,8 +45,22 @@ export default function App() {
       // 1. Calling getSession() forces the Supabase client to inspect the current URL.
       // 2. If it finds auth tokens in the hash (e.g., #access_token=...), it extracts them,
       //    establishes the user session, and automatically clears the tokens from the URL history.
+
       const { data: { session } } = await supabase.auth.getSession();
+
+      if (session?.user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', session.user.id)
+          .single();
+        if (profile) {
+          useAuthStore.getState().setProfile(profile);
+        }
+      }
+
       setSession(session);
+
 
       // 3. Once getSession() is complete (and the URL is clean), mark the app as ready.
       setIsReady(true);
@@ -54,15 +68,29 @@ export default function App() {
 
     initAuth();
 
-    const {
+        const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, session) => {
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
       // If this code runs inside the auth popup (opened by Google OAuth),
       // close the popup immediately after successful sign-in.
       if (event === 'SIGNED_IN' && window.opener) {
         window.close();
         return;
       }
+
+      if (session?.user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', session.user.id)
+          .single();
+        if (profile) {
+          useAuthStore.getState().setProfile(profile);
+        }
+      } else {
+        useAuthStore.getState().setProfile(null);
+      }
+
       setSession(session);
     });
 
